@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science Lab Rush</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1B2A;
+    --navy2: #1A2E45;
+    --cyan: #00D4FF;
+    --amber: #FFB830;
+    --mint: #4ECDC4;
+    --crimson: #FF4757;
+    --purple: #A855F7;
+    --green: #2ECC71;
+    --card-bg: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--navy);
+    color: #fff;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; position: fixed; inset: 0; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  /* ─── START SCREEN ─── */
+  #startScreen {
+    background: radial-gradient(ellipse at 50% 30%, #1A3A5C 0%, var(--navy) 70%);
+  }
+  .lab-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--cyan), var(--mint), var(--amber));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .lab-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .beaker-anim {
+    width: 90px; height: 90px; margin: 30px auto;
+    position: relative;
+  }
+  .beaker-anim svg { width: 100%; height: 100%; }
+  .bubble {
+    animation: rise 2s ease-in infinite;
+    opacity: 0;
+  }
+  .bubble:nth-child(2) { animation-delay: 0.6s; }
+  .bubble:nth-child(3) { animation-delay: 1.2s; }
+  @keyframes rise {
+    0% { transform: translateY(0); opacity: 0.8; }
+    100% { transform: translateY(-30px); opacity: 0; }
+  }
+  .btn {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 14px 40px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-transform: uppercase;
+  }
+  .btn:hover { transform: translateY(-3px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--cyan), var(--mint));
+    color: var(--navy);
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+  }
+  .btn-primary:hover { box-shadow: 0 0 50px rgba(0, 212, 255, 0.7); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--cyan);
+    border: 2px solid var(--cyan);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+  }
+  .btn-secondary:hover { background: rgba(0, 212, 255, 0.1); }
+  .start-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+
+  /* ─── HOW TO PLAY ─── */
+  #howScreen {
+    background: radial-gradient(ellipse at 50% 30%, #1A3A5C 0%, var(--navy) 70%);
+    padding: 20px;
+  }
+  .how-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.6rem;
+    color: var(--amber);
+    margin-bottom: 24px;
+    letter-spacing: 3px;
+  }
+  .how-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 700px;
+    margin-bottom: 28px;
+  }
+  .how-card {
+    background: var(--card-bg);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .how-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .how-card h3 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--cyan);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .how-card p { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.5; }
+  .topics-row {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px;
+  }
+  .topic-badge {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .tb-chem { background: rgba(168,85,247,0.25); border: 1px solid var(--purple); color: var(--purple); }
+  .tb-math { background: rgba(255,184,48,0.2); border: 1px solid var(--amber); color: var(--amber); }
+  .tb-bio  { background: rgba(46,204,113,0.2); border: 1px solid var(--green); color: var(--green); }
+  .tb-phy  { background: rgba(0,212,255,0.15); border: 1px solid var(--cyan); color: var(--cyan); }
+
+  /* ─── GAME SCREEN ─── */
+  #gameScreen {
+    background: linear-gradient(180deg, #0A1628 0%, #0D1B2A 100%);
+    padding: 0;
+    justify-content: flex-start;
+    overflow: hidden;
+  }
+
+  /* HUD */
+  .hud {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(10,22,40,0.9);
+    border-bottom: 1px solid rgba(0,212,255,0.15);
+    flex-shrink: 0;
+    gap: 8px;
+    flex-wrap: wrap;
+    z-index: 20;
+  }
+  .hud-group { display: flex; align-items: center; gap: 8px; }
+  .hud-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .hud-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+  .lives-display { display: flex; gap: 4px; }
+  .life-heart { font-size: 1.2rem; transition: transform 0.2s; }
+  .life-heart.lost { filter: grayscale(1); opacity: 0.3; }
+  .timer-bar-wrap {
+    width: 120px;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .timer-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--mint), var(--cyan));
+    border-radius: 4px;
+    transition: width 1s linear, background 0.5s;
+  }
+  .timer-bar.warn { background: linear-gradient(90deg, var(--crimson), var(--amber)); }
+  .round-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.75rem;
+    color: var(--amber);
+    letter-spacing: 2px;
+  }
+
+  /* ARENA */
+  .arena {
+    position: relative;
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* CATEGORY ZONES */
+  .zones {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    display: flex;
+    gap: 6px;
+    padding: 0 10px 6px;
+    z-index: 10;
+  }
+  .zone {
+    flex: 1;
+    border-radius: 14px 14px 0 0;
+    padding: 10px 6px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.1s, filter 0.1s;
+    border: 2px solid transparent;
+    border-bottom: none;
+    position: relative;
+  }
+  .zone:hover { transform: translateY(-4px); }
+  .zone.correct-flash { animation: correctFlash 0.4s ease; }
+  .zone.wrong-flash   { animation: wrongFlash 0.4s ease; }
+  @keyframes correctFlash { 0%,100%{} 50%{background: rgba(46,204,113,0.5) !important; box-shadow: 0 0 30px var(--green);} }
+  @keyframes wrongFlash   { 0%,100%{} 50%{background: rgba(255,71,87,0.4) !important; box-shadow: 0 0 30px var(--crimson);} }
+  .zone-chem { background: rgba(168,85,247,0.12); border-color: rgba(168,85,247,0.4); }
+  .zone-math { background: rgba(255,184,48,0.10); border-color: rgba(255,184,48,0.35); }
+  .zone-bio  { background: rgba(46,204,113,0.10); border-color: rgba(46,204,113,0.35); }
+  .zone-phy  { background: rgba(0,212,255,0.08);  border-color: rgba(0,212,255,0.3);  }
+  .zone-icon { font-size: 1.8rem; display: block; }
+  .zone-name {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  .zone-chem .zone-name { color: var(--purple); }
+  .zone-math .zone-name { color: var(--amber); }
+  .zone-bio  .zone-name { color: var(--green); }
+  .zone-phy  .zone-name { color: var(--cyan); }
+
+  /* FALLING CARD */
+  .falling-card {
+    position: absolute;
+    top: -80px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 14px;
+    padding: 12px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.1s;
+    backdrop-filter: blur(4px);
+    z-index: 15;
+    min-width: 90px;
+    max-width: 140px;
+  }
+  .falling-card:hover { transform: scale(1.07); box-shadow: 0 0 20px rgba(0,212,255,0.5); }
+  .falling-card .card-main {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .falling-card .card-hint {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+    line-height: 1.3;
+  }
+  .falling-card.selected {
+    border-color: var(--cyan);
+    box-shadow: 0 0 20px rgba(0,212,255,0.6);
+    transform: scale(1.1);
+    z-index: 20;
+  }
+
+  /* STARS CANVAS */
+  #starCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* ROUND FLASH */
+  .round-flash-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .round-flash-overlay.show { opacity: 1; }
+  .round-flash-text {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(2rem, 6vw, 5rem);
+    font-weight: 900;
+    color: var(--amber);
+    text-shadow: 0 0 40px rgba(255,184,48,0.8);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* FACT TOAST */
+  .fact-toast {
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%) translateY(30px);
+    background: rgba(10,22,40,0.95);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 14px;
+    padding: 12px 22px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.85);
+    max-width: 360px;
+    text-align: center;
+    z-index: 55;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .fact-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .fact-toast .fact-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--mint);
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  /* ─── END SCREEN ─── */
+  #endScreen {
+    background: radial-gradient(ellipse at 50% 30%, #1A3A5C 0%, var(--navy) 70%);
+    text-align: center;
+    padding: 20px;
+  }
+  .end-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    font-weight: 900;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+  }
+  .stars-row {
+    display: flex; gap: 10px; justify-content: center; margin: 20px 0;
+    font-size: 2.8rem;
+  }
+  .star-icon { opacity: 0.2; transition: opacity 0.4s, transform 0.4s; }
+  .star-icon.lit { opacity: 1; transform: scale(1.2); }
+  .end-stats {
+    display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+    margin: 20px 0;
+  }
+  .end-stat {
+    background: var(--card-bg);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 14px;
+    padding: 18px 28px;
+    min-width: 120px;
+  }
+  .end-stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--cyan);
+  }
+  .end-stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .end-msg { font-size: 1.1rem; color: rgba(255,255,255,0.75); margin-bottom: 28px; max-width: 480px; }
+  .end-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* Floating particles bg */
+  #bgCanvas {
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 0;
+    opacity: 0.4;
+  }
+
+  .screen { z-index: 1; }
+
+  /* Glow pulses */
+  @keyframes glow {
+    0%,100% { box-shadow: 0 0 20px rgba(0,212,255,0.3); }
+    50%      { box-shadow: 0 0 40px rgba(0,212,255,0.7); }
+  }
+
+  /* Shake animation for wrong */
+  @keyframes shake {
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(8px); }
+    60%{ transform: translateX(-5px); }
+    80%{ transform: translateX(5px); }
+  }
+  .shake { animation: shake 0.4s ease; }
+
+  /* Sound toggle */
+  .sound-btn {
+    font-size: 1.3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.6);
+    transition: color 0.2s;
+    padding: 4px;
+  }
+  .sound-btn:hover { color: var(--cyan); }
+
+  /* Combo flash */
+  .combo-badge {
+    position: fixed;
+    top: 80px; left: 50%;
+    transform: translateX(-50%) scale(0);
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--amber);
+    text-shadow: 0 0 20px rgba(255,184,48,0.8);
+    letter-spacing: 3px;
+    z-index: 55;
+    pointer-events: none;
+    transition: transform 0.2s, opacity 0.3s;
+  }
+  .combo-badge.show { transform: translateX(-50%) scale(1); }
+  .combo-badge.hide { opacity: 0; }
+
+  @media (max-width: 500px) {
+    .how-grid { grid-template-columns: 1fr; }
+    .zones { gap: 4px; padding: 0 6px 4px; }
+    .zone-icon { font-size: 1.4rem; }
+    .zone-name { font-size: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- BG CANVAS -->
+<canvas id="bgCanvas"></canvas>
+<canvas id="starCanvas"></canvas>
+
+<!-- ═══════════════ START SCREEN ═══════════════ -->
+<div id="startScreen" class="screen active">
+  <div class="beaker-anim">
+    <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M28 10 L28 38 L10 72 C8 76 11 82 16 82 L64 82 C69 82 72 76 70 72 L52 38 L52 10 Z" stroke="#00D4FF" stroke-width="3" fill="rgba(0,212,255,0.08)"/>
+      <rect x="24" y="6" width="32" height="6" rx="3" fill="rgba(0,212,255,0.3)" stroke="#00D4FF" stroke-width="2"/>
+      <ellipse cx="40" cy="72" rx="20" ry="7" fill="rgba(78,205,196,0.3)"/>
+      <circle class="bubble" cx="34" cy="60" r="3" fill="rgba(78,205,196,0.7)"/>
+      <circle class="bubble" cx="44" cy="65" r="2" fill="rgba(0,212,255,0.8)"/>
+      <circle class="bubble" cx="38" cy="70" r="2.5" fill="rgba(168,85,247,0.7)"/>
+    </svg>
+  </div>
+  <div class="lab-title">Science Lab<br>Rush</div>
+  <div class="lab-subtitle">Secondary School Edition</div>
+  <div style="margin: 32px 0;" class="start-buttons">
+    <button class="btn btn-primary" onclick="showScreen('howScreen')">▶ Start Game</button>
+    <button class="btn btn-secondary" onclick="showScreen('howScreen')">How to Play</button>
+  </div>
+  <p style="font-size:0.75rem; color:rgba(255,255,255,0.3); letter-spacing:1px;">10 ROUNDS · CHEMISTRY · MATHS · BIOLOGY · PHYSICS</p>
+</div>
+
+<!-- ═══════════════ HOW TO PLAY ═══════════════ -->
+<div id="howScreen" class="screen">
+  <div class="how-title">⚗ How to Play</div>
+  <div class="how-grid">
+    <div class="how-card">
+      <div class="how-icon">👆</div>
+      <div>
+        <h3>Select</h3>
+        <p>Click a falling card to select it — it will glow cyan when active.</p>
+      </div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">🧪</div>
+      <div>
+        <h3>Sort</h3>
+        <p>Click the correct subject zone at the bottom to send the card there.</p>
+      </div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">⏱</div>
+      <div>
+        <h3>Be Fast</h3>
+        <p>Each round has a 30s timer. Cards that reach the bottom cost you a life!</p>
+      </div>
+    </div>
+    <div class="how-card">
+      <div class="how-icon">💥</div>
+      <div>
+        <h3>Combos</h3>
+        <p>Get 3+ correct in a row for a combo bonus — earn extra points!</p>
+      </div>
+    </div>
+  </div>
+  <div class="topics-row">
+    <span class="topic-badge tb-chem">⚗ Chemistry</span>
+    <span class="topic-badge tb-math">∑ Maths</span>
+    <span class="topic-badge tb-bio">🌿 Biology</span>
+    <span class="topic-badge tb-phy">⚡ Physics</span>
+  </div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-primary" onclick="startGame()">Let's Go!</button>
+    <button class="btn btn-secondary" onclick="showScreen('startScreen')">← Back</button>
+  </div>
+</div>
+
+<!-- ═══════════════ GAME SCREEN ═══════════════ -->
+<div id="gameScreen" class="screen">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-group">
+      <span class="hud-label">Round</span>
+      <span class="hud-val round-label" id="hudRound">1/10</span>
+    </div>
+    <div class="hud-group">
+      <span class="hud-label">Score</span>
+      <span class="hud-val" id="hudScore">0</span>
+    </div>
+    <div class="hud-group">
+      <span class="hud-label">Lives</span>
+      <div class="lives-display" id="livesDisplay"></div>
+    </div>
+    <div class="hud-group">
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timerBar"></div></div>
+      <span class="hud-val" id="hudTimer" style="font-size:0.9rem;">15</span>
+    </div>
+    <button class="sound-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+  </div>
+
+  <!-- ARENA -->
+  <div class="arena" id="arena">
+    <!-- Falling cards injected here -->
+
+    <!-- CATEGORY ZONES -->
+    <div class="zones">
+      <div class="zone zone-chem" id="zone-chem" onclick="handleZoneClick('chem')">
+        <span class="zone-icon">⚗</span>
+        <span class="zone-name">Chemistry</span>
+      </div>
+      <div class="zone zone-math" id="zone-math" onclick="handleZoneClick('math')">
+        <span class="zone-icon">∑</span>
+        <span class="zone-name">Maths</span>
+      </div>
+      <div class="zone zone-bio" id="zone-bio" onclick="handleZoneClick('bio')">
+        <span class="zone-icon">🌿</span>
+        <span class="zone-name">Biology</span>
+      </div>
+      <div class="zone zone-phy" id="zone-phy" onclick="handleZoneClick('phy')">
+        <span class="zone-icon">⚡</span>
+        <span class="zone-name">Physics</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ END SCREEN ═══════════════ -->
+<div id="endScreen" class="screen">
+  <div class="end-title" id="endTitle">Game Over!</div>
+  <div class="stars-row" id="starsRow">
+    <span class="star-icon" id="star1">⭐</span>
+    <span class="star-icon" id="star2">⭐</span>
+    <span class="star-icon" id="star3">⭐</span>
+    <span class="star-icon" id="star4">⭐</span>
+    <span class="star-icon" id="star5">⭐</span>
+  </div>
+  <div class="end-msg" id="endMsg"></div>
+  <div class="end-stats">
+    <div class="end-stat"><div class="end-stat-val" id="endScore">0</div><div class="end-stat-label">Score</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="endCorrect">0</div><div class="end-stat-label">Correct</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="endAccuracy">0%</div><div class="end-stat-label">Accuracy</div></div>
+    <div class="end-stat"><div class="end-stat-val" id="endCombo">0</div><div class="end-stat-label">Best Combo</div></div>
+  </div>
+  <div class="end-buttons">
+    <button class="btn btn-primary" onclick="startGame()">▶ Play Again</button>
+    <button class="btn btn-secondary" onclick="showScreen('startScreen')">🏠 Home</button>
+  </div>
+</div>
+
+<!-- OVERLAYS -->
+<div class="round-flash-overlay" id="roundFlash">
+  <div class="round-flash-text" id="roundFlashText"></div>
+</div>
+<div class="fact-toast" id="factToast">
+  <div class="fact-label">💡 Did you know?</div>
+  <div id="factText"></div>
+</div>
+<div class="combo-badge" id="comboBadge"></div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  AUDIO ENGINE (Web Audio API — no external files needed)
+// ════════════════════════════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx = null;
+let soundEnabled = true;
+let bgGainNode = null;
+let bgOscillators = [];
+
+function getCtx() {
+  if (!ctx) ctx = new AudioCtx();
+  return ctx;
+}
+
+function playTone(freq, type='sine', duration=0.15, vol=0.3, delay=0) {
+  if (!soundEnabled) return;
+  const ac = getCtx();
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.connect(g); g.connect(ac.destination);
+  o.type = type;
+  o.frequency.setValueAtTime(freq, ac.currentTime + delay);
+  g.gain.setValueAtTime(vol, ac.currentTime + delay);
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + duration);
+  o.start(ac.currentTime + delay);
+  o.stop(ac.currentTime + delay + duration + 0.01);
+}
+
+function playCorrect() {
+  playTone(523, 'sine', 0.1, 0.25);
+  playTone(659, 'sine', 0.1, 0.2, 0.1);
+  playTone(784, 'sine', 0.15, 0.2, 0.2);
+}
+
+function playWrong() {
+  playTone(200, 'sawtooth', 0.2, 0.3);
+  playTone(150, 'sawtooth', 0.2, 0.3, 0.15);
+}
+
+function playCombo() {
+  [523,659,784,1047].forEach((f,i) => playTone(f,'sine',0.12,0.25,i*0.08));
+}
+
+function playRoundStart() {
+  playTone(440,'sine',0.1,0.2);
+  playTone(550,'sine',0.1,0.2,0.1);
+  playTone(660,'sine',0.15,0.25,0.2);
+}
+
+function playGameOver() {
+  playTone(400,'sawtooth',0.3,0.3);
+  playTone(300,'sawtooth',0.3,0.3,0.25);
+  playTone(200,'sawtooth',0.4,0.3,0.5);
+}
+
+function playVictory() {
+  const notes=[523,659,784,659,784,1047];
+  notes.forEach((f,i)=>playTone(f,'sine',0.15,0.3,i*0.1));
+}
+
+function playLifeLost() {
+  playTone(330,'triangle',0.25,0.4);
+  playTone(220,'triangle',0.3,0.4,0.2);
+}
+
+function startBgMusic() {
+  if (!soundEnabled) return;
+  stopBgMusic();
+  const ac = getCtx();
+  bgGainNode = ac.createGain();
+  bgGainNode.gain.setValueAtTime(0.04, ac.currentTime);
+  bgGainNode.connect(ac.destination);
+
+  const pattern = [130.8,146.8,164.8,174.6,196,174.6,164.8,146.8];
+  let step = 0;
+  function playBeat() {
+    if (!bgGainNode) return;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.connect(g); g.connect(bgGainNode);
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(pattern[step % pattern.length], ac.currentTime);
+    g.gain.setValueAtTime(0.6, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.35);
+    o.start(ac.currentTime);
+    o.stop(ac.currentTime + 0.36);
+    bgOscillators.push(o);
+    step++;
+  }
+  bgInterval = setInterval(playBeat, 420);
+}
+
+let bgInterval = null;
+function stopBgMusic() {
+  if (bgInterval) clearInterval(bgInterval);
+  bgInterval = null;
+  bgOscillators = [];
+  if (bgGainNode) { bgGainNode.disconnect(); bgGainNode = null; }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundBtn').textContent = soundEnabled ? '🔊' : '🔇';
+  if (soundEnabled && gameRunning) startBgMusic();
+  else stopBgMusic();
+}
+
+// ════════════════════════════════════════════════════════
+//  BACKGROUND CANVAS (floating molecules)
+// ════════════════════════════════════════════════════════
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+let particles = [];
+
+function initBgCanvas() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+  particles = Array.from({length: 30}, () => ({
+    x: Math.random() * bgCanvas.width,
+    y: Math.random() * bgCanvas.height,
+    r: Math.random() * 3 + 1,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: -Math.random() * 0.4 - 0.1,
+    opacity: Math.random() * 0.5 + 0.1,
+    color: ['#00D4FF','#4ECDC4','#A855F7','#FFB830'][Math.floor(Math.random()*4)]
+  }));
+}
+
+function animBg() {
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.y < -10) { p.y = bgCanvas.height + 10; p.x = Math.random() * bgCanvas.width; }
+    bgCtx.beginPath();
+    bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    bgCtx.fillStyle = p.color;
+    bgCtx.globalAlpha = p.opacity;
+    bgCtx.fill();
+    bgCtx.globalAlpha = 1;
+  });
+  requestAnimationFrame(animBg);
+}
+
+// ════════════════════════════════════════════════════════
+//  STAR BURST CANVAS
+// ════════════════════════════════════════════════════════
+const starCanvas = document.getElementById('starCanvas');
+const starCtx = starCanvas.getContext('2d');
+starCanvas.width = window.innerWidth;
+starCanvas.height = window.innerHeight;
+let starParticles = [];
+
+function spawnStars(x, y, color='#00D4FF') {
+  for (let i = 0; i < 18; i++) {
+    const angle = (Math.PI * 2 * i) / 18;
+    const speed = Math.random() * 5 + 2;
+    starParticles.push({
+      x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+      life: 1, color, r: Math.random() * 4 + 2
+    });
+  }
+}
+
+function animStars() {
+  starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
+  starParticles = starParticles.filter(p => p.life > 0);
+  starParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.1;
+    p.life -= 0.03;
+    starCtx.beginPath();
+    starCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    starCtx.fillStyle = p.color;
+    starCtx.globalAlpha = p.life;
+    starCtx.fill();
+    starCtx.globalAlpha = 1;
+  });
+  requestAnimationFrame(animStars);
+}
+
+// ════════════════════════════════════════════════════════
+//  GAME DATA (10 rounds of cards)
+// ════════════════════════════════════════════════════════
+const SUBJECTS = {
+  chem: { color: '#A855F7', name: 'Chemistry' },
+  math: { color: '#FFB830', name: 'Maths' },
+  bio:  { color: '#2ECC71', name: 'Biology' },
+  phy:  { color: '#00D4FF', name: 'Physics' }
+};
+
+const CARD_POOL = [
+  // ── CHEMISTRY (25 cards) ──────────────────────────────────────────────────
+  { main: 'H₂O',        hint: 'Water formula',           subject: 'chem', fact: 'Water is the only natural substance found in all three states of matter at temperatures normally found on Earth.' },
+  { main: 'NaCl',       hint: 'Table salt',              subject: 'chem', fact: 'Sodium chloride is an ionic compound. When dissolved in water it splits into Na⁺ and Cl⁻ ions, conducting electricity.' },
+  { main: 'O₂',         hint: 'Diatomic gas',            subject: 'chem', fact: 'Oxygen makes up about 21% of Earth\'s atmosphere. It was first isolated by Carl Wilhelm Scheele in 1772.' },
+  { main: 'CO₂',        hint: 'Greenhouse gas',          subject: 'chem', fact: 'CO₂ is produced by burning fossil fuels and by respiration. Plants absorb it during photosynthesis.' },
+  { main: 'Fe',         hint: 'Symbol for Iron',         subject: 'chem', fact: 'Iron\'s symbol "Fe" comes from the Latin "ferrum". Iron is the most abundant element on Earth by mass.' },
+  { main: 'Au',         hint: 'Symbol for Gold',         subject: 'chem', fact: 'Gold\'s symbol "Au" comes from the Latin "aurum". Gold is so unreactive it is found as pure metal in nature.' },
+  { main: 'H₂SO₄',     hint: 'Strong acid',             subject: 'chem', fact: 'Sulfuric acid is the world\'s most produced industrial chemical — over 200 million tonnes made each year.' },
+  { main: 'pH 7',       hint: 'Neutral solution',        subject: 'chem', fact: 'pH stands for "potential of hydrogen." Values below 7 are acidic; above 7 are alkaline; 7 is neutral.' },
+  { main: 'Mg',         hint: 'Burns bright white',      subject: 'chem', fact: 'Magnesium burns at over 3,000°C with an intensely bright white flame impossible to extinguish with water.' },
+  { main: 'Na',         hint: 'Alkali metal',            subject: 'chem', fact: 'Sodium is so reactive it must be stored under oil. It reacts violently with water, producing hydrogen gas.' },
+  { main: 'Covalent\nBond', hint: 'Electrons shared',   subject: 'chem', fact: 'In a covalent bond, atoms share pairs of electrons. Water (H₂O) has two covalent O–H bonds.' },
+  { main: 'Ionic\nBond',    hint: 'Electrons transferred', subject: 'chem', fact: 'Ionic bonds form when one atom gives electrons to another. Metal + non-metal usually form ionic compounds.' },
+  { main: 'Oxidation',  hint: 'Loss of electrons',       subject: 'chem', fact: 'OIL RIG: Oxidation Is Loss, Reduction Is Gain — a handy way to remember electron transfer in redox reactions.' },
+  { main: 'Catalyst',   hint: 'Speeds reaction',         subject: 'chem', fact: 'A catalyst speeds up a reaction without being used up. Manganese dioxide catalyses decomposition of H₂O₂.' },
+  { main: 'Cu',         hint: 'Reddish metal',           subject: 'chem', fact: 'Copper (Cu, from Latin "cuprum") is an excellent conductor of electricity, used widely in wiring and circuits.' },
+  { main: 'Electrolysis',hint: 'Current splits compound', subject: 'chem', fact: 'Electrolysis uses electrical energy to break apart ionic compounds. It\'s used to purify copper and extract aluminium.' },
+  { main: 'Atom',       hint: 'Smallest particle',       subject: 'chem', fact: 'Atoms consist of protons and neutrons in the nucleus, with electrons orbiting in energy shells or levels.' },
+  { main: 'HCl',        hint: 'Hydrochloric acid',       subject: 'chem', fact: 'HCl is a strong acid found in your stomach (gastric acid) that helps break down food and kill bacteria.' },
+  { main: 'Alkali',     hint: 'pH above 7',              subject: 'chem', fact: 'Alkalis are bases dissolved in water. Sodium hydroxide (NaOH) is a common strong alkali used in soap-making.' },
+  { main: 'Distillation',hint: 'Separating liquids',     subject: 'chem', fact: 'Distillation separates liquids with different boiling points. It is used to purify water and produce alcohol.' },
+  { main: 'Ca',         hint: 'Bone mineral',            subject: 'chem', fact: 'Calcium (Ca) is vital for strong bones and teeth. Calcium carbonate (CaCO₃) is the main mineral in limestone.' },
+  { main: 'Periodic\nTable',hint: 'Elements arranged',   subject: 'chem', fact: 'Dmitri Mendeleev created the periodic table in 1869, arranging elements by atomic mass and leaving gaps for undiscovered ones.' },
+  { main: 'Neutralisation', hint: 'Acid + Base',         subject: 'chem', fact: 'Acid + Base → Salt + Water. For example: HCl + NaOH → NaCl + H₂O. The products are always neutral at exact ratio.' },
+  { main: 'Cl',         hint: 'Halogen, Group 7',        subject: 'chem', fact: 'Chlorine is a toxic yellow-green gas used to disinfect drinking water and swimming pools in small, safe amounts.' },
+  { main: 'Exothermic', hint: 'Releases heat',           subject: 'chem', fact: 'Exothermic reactions release energy to surroundings, causing a temperature rise. Combustion and neutralisation are exothermic.' },
+
+  // ── MATHEMATICS (25 cards) ───────────────────────────────────────────────
+  { main: 'π ≈ 3.14',   hint: 'Circle constant',         subject: 'math', fact: 'Pi (π) is irrational — its decimal digits never repeat or end. Over 100 trillion digits have been calculated by computers.' },
+  { main: 'a²+b²=c²',  hint: 'Pythagorean theorem',     subject: 'math', fact: 'In a right-angled triangle, the hypotenuse squared equals the sum of the squares of the other two sides.' },
+  { main: '2x+3=11',   hint: 'Solve for x',             subject: 'math', fact: 'The solution is x = 4. Subtract 3 from both sides to get 2x = 8, then divide by 2.' },
+  { main: 'y=mx+c',    hint: 'Straight line graph',     subject: 'math', fact: '"m" is the gradient (slope) and "c" is the y-intercept. A steeper line has a larger absolute value of m.' },
+  { main: '360°',       hint: 'Angles in a circle',      subject: 'math', fact: 'The ancient Babylonians divided the circle into 360° because 360 is divisible by 1, 2, 3, 4, 5, 6, 8, 9, 10 and 12.' },
+  { main: 'HCF & LCM', hint: 'Factors & multiples',     subject: 'math', fact: 'HCF is the largest factor shared by two numbers. LCM is the smallest multiple shared. HCF × LCM = product of the two numbers.' },
+  { main: '(x+3)(x-3)',hint: 'Difference of squares',   subject: 'math', fact: 'x²−9 = (x+3)(x−3). The difference of two squares always factorises into two conjugate brackets.' },
+  { main: 'P(E)=n/N',  hint: 'Probability formula',     subject: 'math', fact: 'Probability = favourable outcomes ÷ total outcomes. It always falls between 0 (impossible) and 1 (certain).' },
+  { main: 'Median',     hint: 'Middle value',            subject: 'math', fact: 'The median is found by sorting data in order and picking the middle value. It resists the effect of extreme outliers.' },
+  { main: 'Area = πr²',hint: 'Circle area',             subject: 'math', fact: 'The area of a circle with radius r is πr². If the radius doubles, the area quadruples because of the r² relationship.' },
+  { main: 'Indices',    hint: 'Powers & roots',          subject: 'math', fact: 'Index laws: aᵐ × aⁿ = aᵐ⁺ⁿ and aᵐ ÷ aⁿ = aᵐ⁻ⁿ. Any number to the power of 0 equals 1.' },
+  { main: 'Sim. Figures',hint: 'Same shape, diff. size', subject: 'math', fact: 'Similar figures have the same angles and proportional sides. If the length ratio is k, area ratio is k² and volume ratio is k³.' },
+  { main: 'Quadratic',  hint: 'ax²+bx+c=0',             subject: 'math', fact: 'Quadratic equations can be solved by factoring, completing the square, or using the quadratic formula x = (−b ± √(b²−4ac)) / 2a.' },
+  { main: 'Sine Rule',  hint: 'a/sinA = b/sinB',        subject: 'math', fact: 'The sine rule links angles and opposite sides in any triangle. It\'s used when you know two angles and a side, or two sides and a non-included angle.' },
+  { main: 'Bearings',   hint: 'Measured from North',     subject: 'math', fact: 'Bearings are always measured clockwise from North and written as 3-digit numbers, e.g. 045° for northeast.' },
+  { main: 'Vectors',    hint: 'Direction + magnitude',   subject: 'math', fact: 'Vectors have both magnitude and direction. They are added tip-to-tail and can represent displacement, velocity, and force.' },
+  { main: 'Standard\nForm',hint: 'a × 10ⁿ',            subject: 'math', fact: 'Standard form (scientific notation) is used for very large or small numbers, e.g. 3.0 × 10⁸ m/s for the speed of light.' },
+  { main: 'Mean',       hint: 'Sum ÷ count',             subject: 'math', fact: 'The mean is the sum of all values divided by the count. It is affected by outliers, unlike the median or mode.' },
+  { main: 'Box Plot',   hint: 'Shows data spread',       subject: 'math', fact: 'A box plot displays the minimum, lower quartile, median, upper quartile, and maximum — giving a quick view of data spread.' },
+  { main: 'Ratio',      hint: 'Comparing quantities',    subject: 'math', fact: 'A ratio like 3:5 means for every 3 of one thing there are 5 of another. Ratios can be simplified like fractions.' },
+  { main: 'Volume of\nCylinder',hint: 'πr²h',          subject: 'math', fact: 'Volume = πr²h. A cylinder with radius 3 and height 5 has volume = π × 9 × 5 ≈ 141.4 cubic units.' },
+  { main: 'Gradient',   hint: 'Rise over run',           subject: 'math', fact: 'Gradient = (y₂ − y₁) ÷ (x₂ − x₁). A positive gradient means the line goes uphill left to right.' },
+  { main: 'Mode',       hint: 'Most frequent value',     subject: 'math', fact: 'The mode is the value that appears most often in a data set. A set can have more than one mode, or none at all.' },
+  { main: 'Locus',      hint: 'Set of points',           subject: 'math', fact: 'A locus is a set of points satisfying a condition. The locus of points equidistant from a fixed point is a circle.' },
+  { main: 'Percentages',hint: 'Parts per 100',           subject: 'math', fact: 'To find a percentage increase: (new − old) ÷ old × 100. Compound interest uses repeated percentage multipliers.' },
+
+  // ── BIOLOGY (25 cards) ───────────────────────────────────────────────────
+  { main: 'Mitosis',    hint: 'Cell division',           subject: 'bio', fact: 'Mitosis produces two genetically identical daughter cells. It\'s the process behind growth, repair, and asexual reproduction.' },
+  { main: 'DNA',        hint: 'Double helix',            subject: 'bio', fact: 'DNA (deoxyribonucleic acid) is a double helix carrying genetic instructions. Its structure was discovered by Watson, Crick, Franklin, and Wilkins in 1953.' },
+  { main: 'Chloro-\nphyll', hint: 'Green pigment',      subject: 'bio', fact: 'Chlorophyll in plant cells absorbs red and blue light for photosynthesis but reflects green — that\'s why plants look green.' },
+  { main: 'Osmosis',    hint: 'Water across membrane',   subject: 'bio', fact: 'Osmosis is the net movement of water molecules from a high to low water potential across a semi-permeable membrane.' },
+  { main: 'Enzyme',     hint: 'Biological catalyst',     subject: 'bio', fact: 'Enzymes are specific proteins that speed up reactions. The "lock and key" model explains how the substrate fits the active site.' },
+  { main: 'Villi',      hint: 'Gut absorption',          subject: 'bio', fact: 'Villi are finger-like projections lining the small intestine. Each villus contains blood capillaries and lacteals for absorption.' },
+  { main: 'Xylem',      hint: 'Water transport',         subject: 'bio', fact: 'Xylem carries water and minerals from roots to leaves. Phloem carries dissolved sugars from leaves to the rest of the plant.' },
+  { main: '46 Chromo-\nsomes', hint: 'Human cells',     subject: 'bio', fact: 'Human body cells have 46 chromosomes in 23 pairs. Gametes (egg and sperm) have only 23 chromosomes each.' },
+  { main: 'Respiration',hint: 'Energy release',          subject: 'bio', fact: 'Aerobic respiration: C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + ATP. Every cell in your body carries out this reaction continuously.' },
+  { main: 'Neuron',     hint: 'Nerve cell',              subject: 'bio', fact: 'Neurons transmit electrical impulses at speeds up to 120 m/s. The human brain contains about 86 billion neurons.' },
+  { main: 'Meiosis',    hint: 'Makes gametes',           subject: 'bio', fact: 'Meiosis produces four genetically different daughter cells with half the chromosome number. It creates sperm and egg cells.' },
+  { main: 'Photosynthesis', hint: '6CO₂+6H₂O→glucose', subject: 'bio', fact: 'Photosynthesis converts light energy into chemical energy (glucose). It occurs in the chloroplasts of plant cells.' },
+  { main: 'Diffusion',  hint: 'Particles spread out',    subject: 'bio', fact: 'Diffusion is the net movement of particles from high to low concentration. Oxygen enters blood via diffusion across alveoli walls.' },
+  { main: 'Homeostasis',hint: 'Keeping balance',         subject: 'bio', fact: 'Homeostasis maintains stable internal conditions such as body temperature (37°C) and blood glucose level.' },
+  { main: 'Insulin',    hint: 'Blood sugar hormone',     subject: 'bio', fact: 'Insulin is produced by the pancreas and lowers blood glucose. Type 1 diabetes occurs when the body cannot produce insulin.' },
+  { main: 'Natural\nSelection', hint: 'Survival of fittest', subject: 'bio', fact: 'Charles Darwin\'s theory: organisms with beneficial traits survive and reproduce more, passing on those traits over generations.' },
+  { main: 'Food Web',   hint: 'Energy flow',             subject: 'bio', fact: 'A food web shows feeding relationships in an ecosystem. Only about 10% of energy is transferred between each trophic level.' },
+  { main: 'Cell\nMembrane', hint: 'Selectively permeable', subject: 'bio', fact: 'The cell membrane controls what enters and exits the cell. It\'s a phospholipid bilayer with embedded proteins.' },
+  { main: 'Antibody',   hint: 'Immune defence',          subject: 'bio', fact: 'Antibodies are Y-shaped proteins produced by white blood cells (B lymphocytes). They bind to specific antigens on pathogens.' },
+  { main: 'Stomata',    hint: 'Leaf pores',              subject: 'bio', fact: 'Stomata are tiny pores on leaf surfaces that allow gas exchange. Guard cells control their opening and closing.' },
+  { main: 'Allele',     hint: 'Gene variant',            subject: 'bio', fact: 'An allele is a version of a gene. Dominant alleles mask recessive ones. Punnett squares predict inheritance probability.' },
+  { main: 'Biotic',     hint: 'Living factors',          subject: 'bio', fact: 'Biotic factors are living components of an ecosystem (predators, prey, disease). Abiotic factors are non-living (temperature, light, pH).' },
+  { main: 'Transpiration', hint: 'Water loss in plants', subject: 'bio', fact: 'Transpiration is the evaporation of water from leaves through stomata. It drives the transpiration stream pulling water up from roots.' },
+  { main: 'Active\nTransport', hint: 'Against concentration', subject: 'bio', fact: 'Active transport moves substances against the concentration gradient using energy (ATP). Roots absorb minerals this way.' },
+  { main: 'Pathogen',   hint: 'Disease-causing agent',   subject: 'bio', fact: 'Pathogens include bacteria, viruses, fungi, and protists. Bacteria are treated with antibiotics; viruses are not.' },
+
+  // ── PHYSICS (25 cards) ───────────────────────────────────────────────────
+  { main: 'F=ma',       hint: 'Newton\'s 2nd Law',       subject: 'phy', fact: 'Force = mass × acceleration. A 10 kg object accelerated at 2 m/s² requires a resultant force of 20 N.' },
+  { main: 'v=fλ',       hint: 'Wave speed',              subject: 'phy', fact: 'Wave speed = frequency × wavelength. For light in a vacuum, v ≈ 3×10⁸ m/s regardless of frequency or colour.' },
+  { main: 'E=mc²',      hint: 'Mass-energy equiv.',      subject: 'phy', fact: 'Einstein\'s equation shows mass and energy are equivalent. Even a 1 g mass contains 9×10¹³ joules of energy.' },
+  { main: 'V=IR',       hint: 'Ohm\'s Law',              subject: 'phy', fact: 'Voltage = Current × Resistance. A 12 V supply through 4 Ω resistance produces 3 A of current.' },
+  { main: 'g ≈ 9.8',    hint: 'Gravitational field',     subject: 'phy', fact: 'Earth\'s gravitational field strength is 9.8 N/kg. On the Moon it\'s only about 1.6 N/kg — objects weigh far less there.' },
+  { main: 'Convection', hint: 'Heat in fluids',          subject: 'phy', fact: 'Hot fluid is less dense and rises; cool fluid sinks. This creates convection currents that transfer thermal energy.' },
+  { main: 'Refraction', hint: 'Light changes speed',     subject: 'phy', fact: 'Light slows down entering a denser medium and bends toward the normal. This is why a straw looks bent in a glass of water.' },
+  { main: 'KE = ½mv²', hint: 'Kinetic energy',          subject: 'phy', fact: 'Doubling speed quadruples kinetic energy because of the v² relationship — this is why car crash speeds are so dangerous.' },
+  { main: 'Half-life',  hint: 'Radioactive decay rate',  subject: 'phy', fact: 'Half-life is the time for half of a radioactive sample to decay. Carbon-14 (half-life 5,730 years) is used in carbon dating.' },
+  { main: 'Series\nCircuit', hint: 'One current path',  subject: 'phy', fact: 'In a series circuit current is the same everywhere, but voltage is shared. Adding resistors increases total resistance.' },
+  { main: 'Momentum',   hint: 'p = mv',                  subject: 'phy', fact: 'Momentum = mass × velocity. In a collision, total momentum before equals total momentum after (conservation of momentum).' },
+  { main: 'Hooke\'s\nLaw', hint: 'F = kx',              subject: 'phy', fact: 'Hooke\'s Law: extension is proportional to force, up to the elastic limit. Beyond this, the spring deforms permanently.' },
+  { main: 'Work Done', hint: 'W = Fd',                   subject: 'phy', fact: 'Work = Force × distance in the direction of the force. Measured in joules (J). 1 J = 1 N moved through 1 m.' },
+  { main: 'Total\nInternal\nReflection', hint: 'Light trapped', subject: 'phy', fact: 'TIR occurs when light hits a boundary at above the critical angle and reflects back. Optical fibres use TIR to carry data.' },
+  { main: 'Power = P/t',hint: 'Rate of energy transfer', subject: 'phy', fact: 'Power = Energy ÷ time, measured in Watts (W). A 60 W bulb transfers 60 J of energy every second.' },
+  { main: 'Resultant\nForce', hint: 'Net force',         subject: 'phy', fact: 'The resultant force is the single force that has the same effect as all forces combined. Zero resultant = no acceleration.' },
+  { main: 'Electromagnet',hint: 'Current makes field',   subject: 'phy', fact: 'A wire carrying current produces a magnetic field. Coiling the wire into a solenoid makes a much stronger, controlled magnet.' },
+  { main: 'Specific\nHeat Cap.',hint: 'Q=mcΔT',         subject: 'phy', fact: 'Specific heat capacity is the energy needed to raise 1 kg of a substance by 1°C. Water\'s high SHC makes it ideal for cooling systems.' },
+  { main: 'Radiation',  hint: 'Electromagnetic waves',   subject: 'phy', fact: 'Thermal radiation travels as infrared electromagnetic waves. Dark, matt surfaces are the best emitters and absorbers of radiation.' },
+  { main: 'Alpha, Beta\n& Gamma', hint: 'Radiation types', subject: 'phy', fact: 'Alpha (α) is least penetrating; stopped by paper. Beta (β) stopped by thin aluminium. Gamma (γ) requires thick lead to block.' },
+  { main: 'Pressure = F/A', hint: 'Pascal (Pa)',         subject: 'phy', fact: 'Pressure = Force ÷ Area in Pascals. Snowshoes work by spreading your weight over a large area to reduce pressure on snow.' },
+  { main: 'Parallel\nCircuit', hint: 'Multiple paths',   subject: 'phy', fact: 'In a parallel circuit, voltage is the same across each branch, but current is shared. Adding branches decreases total resistance.' },
+  { main: 'Frequency', hint: 'Waves per second',         subject: 'phy', fact: 'Frequency is the number of complete waves per second, measured in Hertz (Hz). Human hearing ranges from 20 Hz to 20,000 Hz.' },
+  { main: 'Density = m/v', hint: 'Mass per volume',      subject: 'phy', fact: 'Density = mass ÷ volume, in kg/m³. Ice (917 kg/m³) is less dense than water (1000 kg/m³), which is why it floats.' },
+  { main: 'Terminal\nVelocity', hint: 'No acceleration', subject: 'phy', fact: 'Terminal velocity is reached when drag equals weight. A skydiver reaches about 55 m/s before opening their parachute.' }
+];
+
+// ════════════════════════════════════════════════════════
+//  GAME STATE
+// ════════════════════════════════════════════════════════
+let score = 0;
+let lives = 3;
+let round = 0;
+let timerSecs = 30;
+let timerInterval = null;
+let gameRunning = false;
+let selectedCard = null;
+let fallingCards = [];
+let fallingInterval = null;
+let combo = 0;
+let bestCombo = 0;
+let totalAttempts = 0;
+let totalCorrect = 0;
+const TOTAL_ROUNDS = 10;
+const LIVES_MAX = 3;
+let roundCards = [];
+let cardsThisRound = 0;
+let cardsPerRound = 8;
+let roundEnding = false;
+
+// ════════════════════════════════════════════════════════
+//  SCREEN MANAGEMENT
+// ════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+//  GAME INIT
+// ════════════════════════════════════════════════════════
+function startGame() {
+  score = 0;
+  lives = LIVES_MAX;
+  round = 0;
+  combo = 0;
+  bestCombo = 0;
+  totalAttempts = 0;
+  totalCorrect = 0;
+  gameRunning = true;
+
+  // Create unique cards for every round
+const subjects = ['chem','math','bio','phy'];
+
+const pools = {};
+subjects.forEach(s => {
+  pools[s] = shuffleArray(
+    CARD_POOL.filter(c => c.subject === s)
+  );
+});
+
+roundCards = [];
+
+for (let r = 0; r < TOTAL_ROUNDS; r++) {
+
+  let thisRound = [];
+
+  // 2 cards from each subject = 8 cards
+  subjects.forEach(subject => {
+
+    const start = r * 2;
+
+    const selected = pools[subject].slice(start, start + 2);
+
+    thisRound.push(...selected);
+
+  });
+
+  roundCards.push(shuffleArray(thisRound));
+}
+
+  updateHUD();
+  showScreen('gameScreen');
+  clearArena();
+
+  setTimeout(() => {
+    startRound();
+    startBgMusic();
+  }, 300);
+}
+
+function startRound() {
+  if (round >= TOTAL_ROUNDS) { endGame(); return; }
+  round++;
+  // Load cards only for this round
+  roundPool = roundCards[round - 1];
+  timerSecs = 15;
+  roundEnding = false;
+  cardsThisRound = 0;
+  selectedCard = null;
+  clearArena();
+  updateHUD();
+  playRoundStart();
+
+  // Flash round number
+  const rf = document.getElementById('roundFlash');
+  const rt = document.getElementById('roundFlashText');
+  rt.textContent = `Round ${round}`;
+  rf.classList.add('show');
+  setTimeout(() => rf.classList.remove('show'), 1200);
+
+  // Start timer
+  clearInterval(timerInterval);
+  timerInterval = setInterval(tickTimer, 1000);
+
+  // Start dropping cards
+  clearInterval(fallingInterval);
+  const dropDelay = Math.max(1800, 2800 - round * 100); // gets faster each round
+  fallingInterval = setInterval(() => {
+    if (cardsThisRound < cardsPerRound) {
+      spawnCard();
+    }
+  }, dropDelay);
+  spawnCard(); // spawn one immediately
+}
+
+function tickTimer() {
+  timerSecs--;
+  updateHUD();
+  if (timerSecs <= 0) {
+    nextRound();
+  }
+}
+
+function nextRound() {
+  if (roundEnding) return;
+  roundEnding = true;
+  clearInterval(timerInterval);
+  clearInterval(fallingInterval);
+
+  // Remove all falling cards
+  fallingCards.forEach(fc => {
+    clearInterval(fc.fallInterval);
+    if (fc.el && fc.el.parentNode) fc.el.parentNode.removeChild(fc.el);
+  });
+  fallingCards = [];
+
+  setTimeout(() => {
+    if (round >= TOTAL_ROUNDS) endGame();
+    else startRound();
+  }, 600);
+}
+
+// ════════════════════════════════════════════════════════
+//  CARD SPAWNING
+// ════════════════════════════════════════════════════════
+function spawnCard() {
+  if (!gameRunning) return;
+  const arena = document.getElementById('arena');
+  const arenaH = arena.clientHeight;
+  const arenaW = arena.clientWidth;
+
+  // Pick next card from pool
+  const cardData = roundPool[cardsThisRound];
+  cardsThisRound++;
+
+  const el = document.createElement('div');
+  el.className = 'falling-card';
+  el.innerHTML = `<div class="card-main">${cardData.main}</div><div class="card-hint">${cardData.hint}</div>`;
+  const subject = SUBJECTS[cardData.subject];
+  el.style.borderColor = subject.color + '80';
+  el.style.boxShadow = `0 0 12px ${subject.color}40`;
+
+  const xPos = 20 + Math.random() * (arenaW - 170);
+  el.style.left = xPos + 'px';
+  el.style.top = '-80px';
+  arena.appendChild(el);
+
+  let yPos = -80;
+  const fallSpeed = 0.6 + round * 0.08; // increases each round
+
+  const obj = { el, cardData, yPos, fallInterval: null, reached: false };
+  fallingCards.push(obj);
+
+  el.addEventListener('click', () => selectCard(obj));
+
+  obj.fallInterval = setInterval(() => {
+    if (!gameRunning) return;
+    yPos += fallSpeed;
+    el.style.top = yPos + 'px';
+
+    // Card hits zone area (bottom)
+    const zoneTop = arenaH - 90;
+    if (yPos >= zoneTop && !obj.reached) {
+      obj.reached = true;
+      // Penalise — card missed!
+      missCard(obj);
+    }
+  }, 16);
+}
+
+function missCard(obj) {
+  clearInterval(obj.fallInterval);
+  loseLife();
+  playLifeLost();
+  combo = 0;
+  // Remove card
+  if (obj.el && obj.el.parentNode) {
+    obj.el.style.transition = 'opacity 0.3s';
+    obj.el.style.opacity = '0';
+    setTimeout(() => { if (obj.el.parentNode) obj.el.parentNode.removeChild(obj.el); }, 300);
+  }
+  fallingCards = fallingCards.filter(f => f !== obj);
+  if (selectedCard === obj) selectedCard = null;
+}
+
+// ════════════════════════════════════════════════════════
+//  SELECTION & ANSWER
+// ════════════════════════════════════════════════════════
+function selectCard(obj) {
+  if (!gameRunning) return;
+  // Deselect previous
+  if (selectedCard && selectedCard !== obj) {
+    selectedCard.el.classList.remove('selected');
+  }
+  selectedCard = obj;
+  obj.el.classList.add('selected');
+}
+
+function handleZoneClick(zone) {
+  if (!gameRunning || !selectedCard) return;
+  const obj = selectedCard;
+  const correct = obj.cardData.subject === zone;
+  totalAttempts++;
+
+  const zoneEl = document.getElementById('zone-' + zone);
+  const rect = obj.el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  if (correct) {
+    totalCorrect++;
+    combo++;
+    if (combo > bestCombo) bestCombo = combo;
+
+    // Score: base + time bonus + combo
+    const timeBonus = Math.floor(timerSecs / 3);
+    const comboBonus = combo > 2 ? (combo - 2) * 15 : 0;
+    const pts = 10 + timeBonus + comboBonus;
+    score += pts;
+
+    playCorrect();
+    spawnStars(cx, cy, SUBJECTS[obj.cardData.subject].color);
+    zoneEl.classList.add('correct-flash');
+    setTimeout(() => zoneEl.classList.remove('correct-flash'), 500);
+
+    // Show combo badge
+    if (combo >= 3) {
+      playCombo();
+      showCombo(combo);
+    }
+
+    // Show fact toast
+    showFact(obj.cardData.fact);
+
+    // Float score
+    floatScore(`+${pts}`, cx, cy, '#2ECC71');
+  } else {
+    combo = 0;
+    score = Math.max(0, score - 5);
+    playWrong();
+    zoneEl.classList.add('wrong-flash');
+    setTimeout(() => zoneEl.classList.remove('wrong-flash'), 500);
+    obj.el.classList.add('shake');
+    setTimeout(() => { if (obj.el) obj.el.classList.remove('shake', 'selected'); }, 500);
+    loseLife();
+    floatScore('-5', cx, cy, '#FF4757');
+    selectedCard = null;
+    // Card stays — player can try again (life cost)
+    obj.el.classList.remove('selected');
+    selectedCard = null;
+    updateHUD();
+    return;
+  }
+
+  // Remove card
+  clearInterval(obj.fallInterval);
+  obj.el.classList.remove('selected');
+  obj.el.style.transition = 'transform 0.3s, opacity 0.3s';
+  obj.el.style.transform = 'scale(1.3)';
+  obj.el.style.opacity = '0';
+  setTimeout(() => { if (obj.el && obj.el.parentNode) obj.el.parentNode.removeChild(obj.el); }, 300);
+  fallingCards = fallingCards.filter(f => f !== obj);
+  selectedCard = null;
+  updateHUD();
+}
+
+function loseLife() {
+  lives--;
+  updateHUD();
+  if (lives <= 0) {
+    endGame();
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  FLOATING SCORE TEXT
+// ════════════════════════════════════════════════════════
+function floatScore(text, x, y, color) {
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:fixed; left:${x}px; top:${y}px;
+    font-family:'Orbitron',monospace; font-size:1.2rem; font-weight:900;
+    color:${color}; pointer-events:none; z-index:60;
+    transform:translateX(-50%); transition:top 0.8s, opacity 0.8s;
+  `;
+  el.textContent = text;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => {
+    el.style.top = (y - 60) + 'px';
+    el.style.opacity = '0';
+  });
+  setTimeout(() => el.remove(), 900);
+}
+
+// ════════════════════════════════════════════════════════
+//  COMBO BADGE
+// ════════════════════════════════════════════════════════
+function showCombo(n) {
+  const el = document.getElementById('comboBadge');
+  el.textContent = `🔥 ${n}x COMBO!`;
+  el.classList.remove('hide');
+  el.classList.add('show');
+  setTimeout(() => {
+    el.classList.add('hide');
+    setTimeout(() => { el.classList.remove('show', 'hide'); }, 300);
+  }, 1200);
+}
+
+// ════════════════════════════════════════════════════════
+//  FACT TOAST
+// ════════════════════════════════════════════════════════
+let factTimeout = null;
+function showFact(text) {
+  clearTimeout(factTimeout);
+  const t = document.getElementById('factToast');
+  document.getElementById('factText').textContent = text;
+  t.classList.add('show');
+  factTimeout = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ════════════════════════════════════════════════════════
+//  HUD
+// ════════════════════════════════════════════════════════
+function updateHUD() {
+  document.getElementById('hudRound').textContent = `${round}/${TOTAL_ROUNDS}`;
+  document.getElementById('hudScore').textContent = score;
+  document.getElementById('hudTimer').textContent = timerSecs;
+
+  const bar = document.getElementById('timerBar');
+  bar.style.width = (timerSecs / 15 * 100) + '%';
+  bar.classList.toggle('warn', timerSecs <= 5);
+
+  // Lives
+  const ld = document.getElementById('livesDisplay');
+  ld.innerHTML = '';
+  for (let i = 0; i < LIVES_MAX; i++) {
+    const h = document.createElement('span');
+    h.className = 'life-heart' + (i >= lives ? ' lost' : '');
+    h.textContent = '❤️';
+    ld.appendChild(h);
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  CLEAR ARENA
+// ════════════════════════════════════════════════════════
+function clearArena() {
+  fallingCards.forEach(fc => {
+    clearInterval(fc.fallInterval);
+    if (fc.el && fc.el.parentNode) fc.el.parentNode.removeChild(fc.el);
+  });
+  fallingCards = [];
+  selectedCard = null;
+}
+
+// ════════════════════════════════════════════════════════
+//  END GAME
+// ════════════════════════════════════════════════════════
+function endGame() {
+  gameRunning = false;
+  clearInterval(timerInterval);
+  clearInterval(fallingInterval);
+  clearArena();
+  stopBgMusic();
+
+  const accuracy = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
+
+  // Stars rating
+  let stars = 0;
+  if (accuracy >= 90 && lives > 0) stars = 5;
+  else if (accuracy >= 75) stars = 4;
+  else if (accuracy >= 60) stars = 3;
+  else if (accuracy >= 40) stars = 2;
+  else if (score > 0) stars = 1;
+
+  // Message
+  const msgs = {
+    5: 'Outstanding! You\'re a science superstar! 🌟',
+    4: 'Excellent work! You really know your stuff! 🎉',
+    3: 'Good job! Keep studying and you\'ll be brilliant! 📚',
+    2: 'Not bad! Review your notes and try again! 💪',
+    1: 'Keep practising — every scientist starts somewhere! 🔬',
+    0: 'Don\'t give up! Science rewards persistence! 🧪'
+  };
+
+  // Title
+  const survived = lives > 0;
+  document.getElementById('endTitle').textContent = survived ? '🎉 Well Done!' : '💀 Game Over';
+  document.getElementById('endTitle').style.color = survived ? '#FFB830' : '#FF4757';
+  document.getElementById('endMsg').textContent = msgs[stars] || msgs[0];
+
+  document.getElementById('endScore').textContent = score;
+  document.getElementById('endCorrect').textContent = totalCorrect;
+  document.getElementById('endAccuracy').textContent = accuracy + '%';
+  document.getElementById('endCombo').textContent = bestCombo;
+
+  showScreen('endScreen');
+
+  // Animate stars
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('star' + i).classList.remove('lit');
+  }
+  for (let i = 1; i <= stars; i++) {
+    setTimeout(() => {
+      document.getElementById('star' + i).classList.add('lit');
+      if (stars >= 3) playTone(400 + i * 80, 'sine', 0.15, 0.3);
+    }, i * 250);
+  }
+
+  if (survived) {
+    setTimeout(playVictory, 500);
+    setTimeout(() => {
+      const cx = window.innerWidth / 2;
+      spawnStars(cx, window.innerHeight / 2, '#FFB830');
+      spawnStars(cx - 100, 200, '#00D4FF');
+      spawnStars(cx + 100, 200, '#A855F7');
+    }, 600);
+  } else {
+    playGameOver();
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//  UTILITY
+// ════════════════════════════════════════════════════════
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ════════════════════════════════════════════════════════
+//  RESIZE
+// ════════════════════════════════════════════════════════
+window.addEventListener('resize', () => {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+  starCanvas.width = window.innerWidth;
+  starCanvas.height = window.innerHeight;
+  initBgCanvas();
+});
+
+// ════════════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════════════
+initBgCanvas();
+animBg();
+animStars();
+</script>
+</body>
+</html>
