@@ -1,7 +1,5 @@
 # ⚗️ Science Lab Rush
 
-:contentReference[oaicite:0]{index=0}
-
 A fast-paced, educational browser game designed for **secondary school students** to learn Science through action gameplay. Players must quickly sort falling science cards into the correct subject zones before time runs out.
 
 ---
